@@ -35,7 +35,7 @@ const cardController ={
         }
    },
 
-   getCartItem : async(req,res,next)=>{
+   getUserCartItem : async(req,res,next)=>{
         try{
             // console.log(req.params.userId);
             const carts=await Cart.find({user:req.params.userId}).populate('user').populate('product').lean()
@@ -59,7 +59,7 @@ const cardController ={
         }catch(error){
             next(error)
         }
-   }
+   },
 
 //    const checkUpToCart=async ({user,product,_id,size,quantity})=>{
 //        const CartItem=await Cart.find({user})
@@ -94,15 +94,15 @@ const cardController ={
 //         }
 //    }
 
-//    const deleteCartItem= async (req,res,next)=>{
-//         try{
-//             const {cartId}=req.body
-//             await  Cart.deleteMany({_id : { $in:cartId } })
-//             return res.status(200).json({success:true,status:"ok"})
-//         }catch(error){
-//             next(error)
-//         }
-//    }
+    deleteCartItem: async (req,res,next)=>{
+        try{
+            const {cartId}=req.params.cartId
+            await  Cart.deleteMany({_id : { $in:cartId } })
+            return res.status(200).json({success:true,status:"ok"})
+        }catch(error){
+            next(error)
+        }
+   }
 
 }
 module.exports=cardController;

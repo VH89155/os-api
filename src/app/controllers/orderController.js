@@ -146,12 +146,40 @@ const orderController = {
            
           }))
           
-          return res.status(200).json({orders1,totalPrice,username:user1.username, status:orders.status,id:orders.id})
+          return res.status(200).json({orders1,totalPrice,username:user1.username, status:orders.status,id:orders.id, cancel:orders.cancel})
           
       }catch(error){
           next(error)
       }
     },
+    confirmOrder: async(req,res,next)=>{
+      try{
+        // console.log(req.params.userId); 
+        
+        const orders=await Order.updateOne({_id:req.params.id},{status: true} );
+        console.log(orders)
+        
+        
+        return res.status(200).json(orders)
+        
+    }catch(error){
+        next(error)
+    }
+    },
+    cancelOrder: async(req,res,next)=>{
+      try{
+        // console.log(req.params.userId); 
+        
+        const orders=await Order.updateOne({_id:req.params.id},{cancel: true} );
+        console.log(orders)
+        
+        
+        return res.status(200).json(orders)
+        
+    }catch(error){
+        next(error)
+    }
+    }
       
 }
 

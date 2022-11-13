@@ -1,5 +1,5 @@
 const Product = require("../models/Product");
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 8;
 
 const productController = {
   addProduct: async (req, res) => {
@@ -24,17 +24,19 @@ const productController = {
   getAllProducts: async (req, res) => {
     var page = req.query.page;
     try {
-      if (page) {
+      if (page>0) {
         page = parseInt(page);
         if (page < 0) page = 0;
-        var skip = (page - 1) * PAGE_SIZE;
-
-        const products = await Product.find();
-
-        res.status(200).json(products);
+        var skips = (page - 1) * PAGE_SIZE;
+        
+        const allProducts = await Product.find();
+        const totalPages = await Math.ceil(parseInt((allProducts.length)) / PAGE_SIZE);
+        const products = await Product.find().skip(skips).limit(PAGE_SIZE);
+       
+        res.status(200).json({products,totalPages});
       } else {
         const products = await Product.find();
-        res.status(200).json(products);
+        res.status(200).json({products});
       }
     } catch (err) {
       res.status(401).json(err);
@@ -52,7 +54,8 @@ const productController = {
         })
           .skip(skip)
           .limit(PAGE_SIZE);
-        res.status(200).json(searchValue);
+          const totalPages = await Math.ceil(parseInt((searchValue.length)) / PAGE_SIZE);
+        res.status(200).json({searchValue, totalPages});
       } else {
         const searchValue = await Product.find({
           name: { $regex: `.*${req.query.search}.*`, $options: "i" },
@@ -63,7 +66,37 @@ const productController = {
       res.status(401).json(err);
     }
   },
-  getCategory: async (req, res) => {},
+  getCategory: async (req, res) => {
+    var page = req.query.page;
+    let query =""
+    if( req.body.category ==='1' ){  query = "Phòng khách";}
+    if( req.body.category =='2' ){  query = "Phòng ngủ";}
+    if( req.body.category =='3' ){  query = "Phòng bếp";}
+    // if( req.query.category ===4 ){  query = "Phòng ngủ";}
+    // console.log(query)
+    try {
+      if (page) {
+        page = parseInt(page);
+        if (page < 0) page = 0;
+        var skip = (page - 1) * PAGE_SIZE;
+        const products = await Product.find({
+          category:query
+        })
+          .skip(skip)
+          .limit(PAGE_SIZE);
+          const totalPages = await Math.ceil(parseInt((products.length)) / PAGE_SIZE);
+        res.status(200).json({products, totalPages});
+      } else {
+        const produts = await Product.find({
+          category:query,
+        });
+        res.status(200).json({products, totalPages});
+      }
+    } catch (err) {
+      res.status(401).json(err);
+    }
+
+  },
 
   // Loc. Gia'
   getFilter: async (req, res) => {
@@ -98,11 +131,13 @@ const productController = {
       const product = await Product.findById(req.params.productId).lean();
       if (!product) {
         return res.status(401).json("Loi roi");
-      } else {
+      } 
+      else {
         await Product.updateOne(
           { _id: req.params.productId },
           { $inc: { view: 1 } }
         ).exec();
+        // return res.status(200).json(product);
         return res.status(200).json(product);
       }
     } catch (err) {

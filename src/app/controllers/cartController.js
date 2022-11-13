@@ -2,20 +2,31 @@
 const Cart=require('../models/Cart');
 const Product=require('../models/Product');
 
-const checkTocart = async({user,product,quantity}) =>{
+const checkTocart = async({user,product,quantity,add}) =>{
     const exitsCartItem = await Cart.findOne({user,product})
     if(!exitsCartItem){
         return Cart.create({user,product,quantity})
     }
-    const newQuantity= Number(quantity) +  exitsCartItem.quantity
-    const fullProduct=await Product.findById(product)
-    if(newQuantity>fullProduct.sold){
-            
-            return "Loi, roi";
-            // return next(err)
+    else{
+        let newQuantity= 0;
+       
+        if(add ===1){
+            newQuantity =Number(quantity) +  exitsCartItem.quantity
+        }
+        else {
+            newQuantity =Number(quantity)
+        }
+           
+        const fullProduct=await Product.findById(product)
+        if(newQuantity>fullProduct.sold){
+                
+                return "Loi, roi";
+                // return next(err)
+        }
+        exitsCartItem.quantity=newQuantity;
+        return exitsCartItem.save();
     }
-    exitsCartItem.quantity=newQuantity;
-    return exitsCartItem.save();
+   
 }
 
 const cardController ={
@@ -25,8 +36,8 @@ const cardController ={
     addTocart : async (req,res,next)=> {
         try{
 
-            const {user,product,quantity}={...req.body}
-            const result= await checkTocart({user,product,quantity})
+            const {user,product,quantity,add}={...req.body}
+            const result= await checkTocart({user,product,quantity,add})
 
             return res.status(200).json({success:true,result,status:"ok"})
         }
@@ -96,8 +107,8 @@ const cardController ={
 
     deleteCartItem: async (req,res,next)=>{
         try{
-            const {cartId}=req.params.cartId
-            await  Cart.deleteMany({_id : { $in:cartId } })
+           
+            await  Cart.deleteOne({ _id: req.params.cartId})
             return res.status(200).json({success:true,status:"ok"})
         }catch(error){
             next(error)

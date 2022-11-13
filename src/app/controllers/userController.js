@@ -1,8 +1,7 @@
-const User=require('../models/User');
+const User = require("../models/User");
 const PAGE_SIZE = 4;
-
+const UserDetail = require("../models/UserDetail");
 const userController = {
- 
   getAllUsers: async (req, res) => {
     var page = req.query.page;
     try {
@@ -39,7 +38,39 @@ const userController = {
       return res.status(401).json(err);
     }
   },
-
+  postProfileUser: async (req, res) => {
+    try {
+      const { user, deliveryAddress, fullName, phoneNumber,username } = {...req.body};
+      console.log(user, deliveryAddress, fullName, phoneNumber)
+      let profileUser = await UserDetail.findOne({user});
+      console.log(profileUser)
+      if (!profileUser) {
+      await  UserDetail.create({ user, deliveryAddress, fullName, phoneNumber,username });
+        return res.status(200).json({ success: true });
+      } 
+      else {
+        profileUser.fullName = fullName;
+        profileUser.username = username;
+        profileUser.phoneNumber = phoneNumber;
+        profileUser.deliveryAddress = deliveryAddress;
+        await profileUser.save();
+        return res
+          .status(200)
+          .json({ success: true, profileUser: profileUser });
+      }
+    } 
+    catch (err) {
+      return res.status(401).json({ success: false, err });
+    }
+  },
+  getProfileUser: async (req,res)=>{
+    try{
+     
+    }
+    catch (err){
+      return res.status(401).json({ success: false, err });
+    }
+  }
 };
 
 module.exports = userController;

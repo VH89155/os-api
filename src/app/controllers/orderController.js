@@ -24,12 +24,12 @@ const orderController = {
             
 
             const createOrderItem=await OrderItem.create(newOrderItem)
-            Bluebird.map(cartItem,async(item)=>{
-                await Product.updateOne(
-                    {_id:item.product},
-                   { $inc : {sold: -item.quantity}}
-                    )
-            },{concurrency:cartItem.length})
+            // Bluebird.map(cartItem,async(item)=>{
+            //     await Product.updateOne(
+            //         {_id:item.product},
+            //        { $inc : {sold: -item.quantity}}
+            //         )
+            // },{concurrency:cartItem.length})
             const cartId=cartItem.map(item=>({
                 _id:item.cartId
             }))
@@ -91,21 +91,7 @@ const orderController = {
         try{
             // console.log(req.params.userId);
             const orders=await Order.find({user:req.params.userId}).populate('user').lean()
-            //loc trung
-            // const uniqueProductIds = carts.filter((item,index,cartArray) => {
-            //   return  cartArray.findIndex((vItem) => {
-            //         return  vItem.product._id.toString() === item.product._id.toString()
-            //         })===index
-            // })
-            // .map((item) => item.product._id)
-            // console.log("unique",uniqueProductIds)
-            // const allSizes = await Size.find({ product: { $in: uniqueProductIds } })
-            // .select('product name numberInStock')
-            // .lean()
-            // // console.log("full size",allSizes)
-            // carts.forEach(item=>{
-            //     item.product.sizes= allSizes.filter(size=>size.product.toString()===item.product._id.toString())
-            // })
+             console.log(orders)
             const orders1 =await Bluebird.map(orders,
                 async(item)=>{
                     const orderItems= await OrderItem.find({order : {$in : item._id }})
@@ -127,18 +113,18 @@ const orderController = {
           // console.log(req.params.userId); 
           
           const orders=await Order.findById(req.params.orderId);
-          console.log(orders)
+          // console.log(orders)
           
           const orderItems= await OrderItem.find({order : {$in : orders._id }})
                                                   .populate('product')
                                                   .lean()
+          console.log(orderItems)
           const totalPrice =await orderItems.reduce((total,item)=>{
                           return  total + item.quantity * item.price
                   },0)
            const user1=await User.findById(orders.user).lean()
           const orders1= orderItems.map((item)=>({
-            id: orders._id,
-                       
+            id: orders._id,                
             nameProduct:item.product.name,
             price:item.price,
             quantity:item.quantity,
@@ -157,6 +143,13 @@ const orderController = {
         // console.log(req.params.userId); 
         
         const orders=await Order.updateOne({_id:req.params.id},{status: true} );
+        const orderItem =await OrderItem.find({order:req.params.id})
+        Bluebird.map(orderItem,async(item)=>{
+          await Product.updateOne(
+              {_id:item.product},
+             { $inc : {sold: -item.quantity}}
+              )
+      },{concurrency:orderItem.length})
         console.log(orders)
         
         

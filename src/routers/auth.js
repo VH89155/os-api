@@ -15,6 +15,7 @@ router.post("/login",authController.loginUser);
 // router.post("/login", middlewareController.verifyToken,authController.loginUser);
 //REFERSH TOKEN
 router.post("/refresh", authController.requestRefreshToken);
+router.post("/logout", authController.userLogout);
 // router.get("/secret", passport.authenticate('jwt',{session: false}),authController.secret);
 // router.get("/secret", middlewareController.verifyToken,authController.secret);
 

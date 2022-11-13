@@ -3,7 +3,7 @@ const auth = require('./auth');
 const cart =require('./cart');
 const order =require('./order');
 const user = require('./user');
-
+const comment = require('./comment');
 
 
 function route(app){
@@ -12,6 +12,7 @@ function route(app){
     app.use('/v1/cart', cart);
     app.use('/v1/order',order);
     app.use('/v1/user', user);
+    app.use('/v1/comment', comment);
 }
 
 module.exports =route;

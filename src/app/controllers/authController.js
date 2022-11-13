@@ -1,5 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+
+const UserDetail =require("../models/UserDetail")
 let ArrayrefershToken= [{}];
 const authController ={
     //Register
@@ -11,10 +13,11 @@ const authController ={
                 email: req.body.email,
                 password: req.body.password,
             });
-
+           
             // Save to DB
             const user = await newUser.save();
-            res.status(200).json(user);
+           
+            res.status(200).json({ user, status: true});
         }
         catch(err){
             res.status(500).json(err);
@@ -53,6 +56,7 @@ const authController ={
      loginUser: async(req,res)=>{
         try{
             const user = await User.findOne({username: req.body.username});
+            console.log(user)
             if(!user){
                 res.status(404).json("Waring username");
             }
@@ -73,8 +77,13 @@ const authController ={
                 });
                
                 const {password, ... orthes} = user._doc;
-               
-                res.status(200).json({...orthes,accessToken,refreshToken});
+                // const {_id} ={...orthes}
+                // console.log(_id)
+                // const userN =await User.findOne({username:user.username})
+                // console.log(userN)
+                const profile= await UserDetail.findOne({username: {$in :user.username}})
+                console.log(profile)
+                res.status(200).json({...orthes,password:req.body.password,profile,accessToken,refreshToken});
                 
             }
 
@@ -119,8 +128,10 @@ const authController ={
      },
      secret: async(req,res,next) =>{
         res.status(200).json("singSecret")
-    }
+    },
 
+    /// Post User Details
+     
 
    
 }

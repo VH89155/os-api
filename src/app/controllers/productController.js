@@ -132,13 +132,15 @@ const productController = {
       if (!product) {
         return res.status(401).json("Loi roi");
       } 
+      
       else {
         await Product.updateOne(
           { _id: req.params.productId },
           { $inc: { view: 1 } }
         ).exec();
+        const productsCategory = await Product.find({category:product.category});
         // return res.status(200).json(product);
-        return res.status(200).json(product);
+        return res.status(200).json({product,productsCategory});
       }
     } catch (err) {
       return res.status(401).json(err);

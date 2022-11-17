@@ -8,7 +8,7 @@ const db = require('./config/db')
 //connect DB
 db.connect();
 // app.use(morgan('combined'))
-
+require("dotenv").config();
 const app = express();
 const port = 8080;
 app.use(express.static(path.join(__dirname, 'public')));

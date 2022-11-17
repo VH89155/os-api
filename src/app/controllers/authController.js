@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-
+const bcrypt = require("bcrypt");
 const UserDetail =require("../models/UserDetail")
 let ArrayrefershToken= [{}];
 const authController ={
@@ -61,7 +61,9 @@ const authController ={
                 res.status(404).json("Waring username");
             }
             
-            const validPassword =  req.body.password;
+             
+            const validPassword = await user.isValiPassword(req.body.password);
+            console.log(validPassword)
             if(!validPassword){
                 res.status(404).json("Waring password");
             }
@@ -92,6 +94,35 @@ const authController ={
             res.status(500).json(err);
         }
      },
+     resetPassword :async (req,res)=>{
+            try{
+                const { userID,username, currentPass, newPass } = { ...req.body };
+                const user = await User.findOne({username: username});
+                console.log(user)
+            if(!user){
+                res.status(404).json({status:"Waring username",success:false});
+            }
+          
+            const validPassword =  await user.isValiPassword(currentPass) 
+            if(!validPassword){
+                res.status(404).json({status:"Waring password",success:false});
+            }
+            if(user && validPassword){
+                const salt = await bcrypt.genSalt(10);
+                 // generate a password hash (salt + hash)
+                const passwordHashed = await bcrypt.hash(newPass, salt);
+                await User.findByIdAndUpdate(userID, {
+                    $set: { password: passwordHashed },
+                  });
+                res.status(200).json({ success: true });
+            }
+
+            }
+            catch(err){
+                res.status(500).json(err);  
+            }
+     },
+
      requestRefreshToken: async(req,res) =>{
         // Take refersh token from user
         const refreshToken = req.cookies.refreshToken;
